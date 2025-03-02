@@ -1,0 +1,159 @@
+/* Apply to the entire site */
+body {
+  background-color: #f8f8f8; /* Slight off-white */
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+/* Main container to center everything */
+.container {
+  text-align: center;
+  width: 90%;
+  max-width: 600px;
+}
+
+/* Title Styling */
+h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+/* Box Styling */
+.box {
+  background-color: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 10px 0;
+}
+
+/* Previous Answers Box */
+.previous-answers {
+  min-height: 60px;
+  text-align: left;
+  padding: 10px;
+  font-size: 0.9rem;
+  color: green;
+}
+
+/* Quiz Section */
+.word {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Animation for shaking effect */
+@keyframes shake {
+  0% {
+    transform: translateX(-5px);
+  }
+  25% {
+    transform: translateX(5px);
+  }
+  50% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* Input styling */
+.input-field {
+  width: calc(100% - 20px);
+  padding: 10px;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  outline: none;
+  text-align: center;
+  display: block;
+  margin: 0 auto;
+  transition: border-color 0.3s ease;
+}
+
+/* When the answer is wrong, make the input box shake and turn red */
+.input-field.wrong {
+  animation: shake 0.3s ease-in-out;
+  border-color: red;
+}
+
+/* Submit button */
+button {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* Topic Grid */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Topic Boxes */
+.grid-box {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.grid-box:hover {
+  transform: scale(1.05);
+}
+
+/* Progress Bar Container */
+.progress-container {
+  background-color: #e0e0e0; /* Light grey background */
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  margin: 15px 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Inner Bar (fills up as progress increases) */
+.progress-bar {
+  height: 20px;
+  border-radius: 10px;
+  background-color: #4caf50; /* Green color */
+  transition: width 0.5s ease-in-out;
+}
+
+/* Progress Text */
+.progress-text {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
