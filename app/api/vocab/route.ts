@@ -11,15 +11,18 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Language and Topic are required' }, { status: 400 });
   }
 
-  const filePath = path.join(process.cwd(), 'public', 'languages', language, `${topic}.txt`);
+  const topicParts = topic.split('/');
+  const lastIndex = topicParts.length - 1;
+  topicParts[lastIndex] = topicParts[lastIndex] + '.txt';
+
+  const filePath = path.join(process.cwd(), 'public', 'languages', language, ...topicParts);
 
   if (!fs.existsSync(filePath)) {
-    return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
+    return NextResponse.json({ error: `File not found: ${filePath}` }, { status: 404 });
   }
 
   try {
     const fileContent = fs.readFileSync(filePath, 'utf8');
-
     const vocab = fileContent
       .split('\n')
       .map((line) => line.split(','))
@@ -33,6 +36,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ vocab: shuffled });
   } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: 'Failed to load vocabulary' }, { status: 500 });
   }
 }

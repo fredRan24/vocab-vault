@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useEffect } from 'react';
 
 interface VocabEntry {
@@ -6,29 +7,53 @@ interface VocabEntry {
   languageB: string;
 }
 
-const VocabQuiz = ({ language, topic }: { language: string; topic: string }) => {
+const VocabQuiz = ({
+  language,
+  topic,
+  onBack,
+}: {
+  language: string;
+  topic: string;
+  onBack: () => void;
+}) => {
   const [vocab, setVocab] = useState<VocabEntry[]>([]);
-  const [currentWord, setCurrentWord] = useState<VocabEntry | null>(null);
+  const [wordQueue, setWordQueue] = useState<VocabEntry[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const [isInCorrectionMode, setIsInCorrectionMode] = useState(false);
+  const [wordToReinsert, setWordToReinsert] = useState<VocabEntry | null>(null);
+
   const [userInput, setUserInput] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
+
   const [completedWords, setCompletedWords] = useState<string[]>([]);
-  const [isWrong, setIsWrong] = useState(false);
-  const [showCorrectAnswer, setShowCorrectAnswer] = useState<string | null>(null);
   const [wordsCompleted, setWordsCompleted] = useState(0);
 
   useEffect(() => {
     fetch(`/api/vocab?language=${language}&topic=${topic}`)
       .then((res) => res.json())
       .then((data) => {
-        setVocab(data.vocab || []);
-        if (data.vocab.length > 0) {
-          setCurrentWord(data.vocab[0]);
-        }
+        const loaded = data.vocab || [];
+        setVocab(loaded);
+        setWordQueue(loaded);
       });
   }, [language, topic]);
 
   const totalWords = vocab.length;
-  const progressPercentage = totalWords > 0 ? Math.round((wordsCompleted / totalWords) * 100) : 0;
+
+  if (!wordQueue.length) {
+    return (
+      <div>
+        <h2>Topic: {topic}</h2>
+        <p>🎉 All words completed!</p>
+        <button className="back-button" onClick={onBack}>
+          Back to Topics
+        </button>
+      </div>
+    );
+  }
+
+  const currentWord = wordQueue[currentIndex];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,22 +61,43 @@ const VocabQuiz = ({ language, topic }: { language: string; topic: string }) => 
 
     const correct = userInput.trim().toLowerCase() === currentWord.languageB.toLowerCase();
 
-    if (correct) {
-      setFeedback('✅ Correct!');
-      setCompletedWords((prev) => [currentWord.languageA, ...prev].slice(0, 5));
-      setIsWrong(false);
-      setShowCorrectAnswer(null);
-      setWordsCompleted((prev) => prev + 1);
-
-      // Move to next word
-      const nextIndex = vocab.indexOf(currentWord) + 1;
-      setCurrentWord(nextIndex < vocab.length ? vocab[nextIndex] : null);
+    if (!isInCorrectionMode) {
+      if (correct) {
+        setWordQueue((prevQueue) => {
+          const newQueue = [...prevQueue];
+          newQueue.splice(currentIndex, 1);
+          const newIndex = Math.min(currentIndex, newQueue.length - 1);
+          setCurrentIndex(newIndex);
+          return newQueue;
+        });
+        setFeedback('✅ Correct!');
+        setCompletedWords((prev) => [...prev.slice(-4), currentWord.languageA]);
+        setWordsCompleted((prev) => prev + 1);
+      } else {
+        setIsInCorrectionMode(true);
+        setWordToReinsert(currentWord);
+        setFeedback('❌ Wrong! Please type the correct answer shown.');
+      }
     } else {
-      setFeedback(`❌ Wrong!`);
-      setIsWrong(true);
-      setShowCorrectAnswer(currentWord.languageB);
+      if (correct) {
+        if (wordToReinsert) {
+          setWordQueue((prevQueue) => {
+            const newQueue = [...prevQueue];
+            newQueue.splice(currentIndex, 1);
+            const insertPosition = Math.min(currentIndex + 5, newQueue.length);
+            newQueue.splice(insertPosition, 0, wordToReinsert);
 
-      setTimeout(() => setIsWrong(false), 400);
+            const newIndex = Math.min(currentIndex, newQueue.length - 1);
+            setCurrentIndex(newIndex);
+            return newQueue;
+          });
+        }
+        setIsInCorrectionMode(false);
+        setWordToReinsert(null);
+        setFeedback('✅ Correct (with help). Word will reappear later!');
+      } else {
+        setFeedback('❌ Still incorrect. Please match the shown translation.');
+      }
     }
 
     setUserInput('');
@@ -61,47 +107,52 @@ const VocabQuiz = ({ language, topic }: { language: string; topic: string }) => 
     <div>
       <h2>Topic: {topic}</h2>
 
-      {/* Completed Words Box */}
       {completedWords.length > 0 && (
         <div className="box previous-answers">
           <strong>Last 5 Correct:</strong>
           <ul>
-            {completedWords.map((word, index) => (
+            {completedWords.slice(-5).map((word, index) => (
               <li key={index}>{word}</li>
             ))}
           </ul>
         </div>
       )}
 
-      {/* Progress Bar */}
       {totalWords > 0 && (
         <div className="progress-container">
-          <div className="progress-bar" style={{ width: `${progressPercentage}%` }}></div>
-          <div className="progress-text">{progressPercentage}% Completed</div>
+          <div
+            className="progress-bar"
+            style={{ width: `${(wordsCompleted / totalWords) * 100}%` }}
+          />
+          <div className="progress-text">
+            {wordsCompleted}/{totalWords}
+          </div>
         </div>
       )}
 
-      {/* Quiz Section */}
-      {currentWord ? (
-        <form onSubmit={handleSubmit} className="box">
-          <p className="word">
-            {currentWord.languageA}{' '}
-            {showCorrectAnswer && <span style={{ color: 'red' }}> - {showCorrectAnswer}</span>}
-          </p>
+      <form onSubmit={handleSubmit} className="box centered-content">
+        <p className="word">
+          {currentWord.languageA}{' '}
+          {isInCorrectionMode && <span className="correction-text">- {currentWord.languageB}</span>}
+        </p>
+
+        <div className="form-row">
           <input
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
-            className={`input-field ${isWrong ? 'wrong' : ''}`}
+            className="input-field"
           />
-          <button type="submit">
-            Submit <span className="arrow">➡️</span>
+          <button type="submit" className="submit-button">
+            Submit
           </button>
-        </form>
-      ) : (
-        <p>🎉 All words completed!</p>
-      )}
+        </div>
+      </form>
 
-      {feedback && <p>{feedback}</p>}
+      {feedback && <p style={{ textAlign: 'center' }}>{feedback}</p>}
+
+      <button className="back-button" onClick={onBack}>
+        Back to Topics
+      </button>
     </div>
   );
 };

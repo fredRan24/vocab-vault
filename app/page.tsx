@@ -11,14 +11,18 @@ export default function Home() {
 
   return (
     <div className="container">
-      <h1>Language Learning Tool</h1>
+      <h1>VOCAB VAULT</h1>
 
       {!selectedLanguage ? (
         <LanguageSelector onSelect={setSelectedLanguage} />
       ) : !selectedTopic ? (
         <TopicSelector language={selectedLanguage} onSelect={setSelectedTopic} />
       ) : (
-        <VocabQuiz language={selectedLanguage} topic={selectedTopic} />
+        <VocabQuiz
+          language={selectedLanguage}
+          topic={selectedTopic}
+          onBack={() => setSelectedTopic(null)}
+        />
       )}
     </div>
   );
