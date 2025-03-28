@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
-import LanguageSelector from '@/components/languageSelector';
-import TopicSelector from '@/components/topicSelector';
-import VocabQuiz from '@/components/vocabQuiz';
+import LanguageSelector from '@components/languageSelector';
+import TopicSelector from '@components/topicSelector';
+import VocabQuiz from '@components/vocabQuiz';
 import '@/app/globals.css';
 
 export default function Home() {
