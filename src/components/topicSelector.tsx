@@ -1,56 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
+import FolderTree, { TopicNode } from '@components/folderTree';
 
-type TopicNode = {
-  name: string;
-  type: 'directory' | 'file';
-  path: string;
-  children?: TopicNode[];
-};
-
-function FolderTree({
-  node,
-  onSelectFile,
-}: {
-  node: TopicNode;
-  onSelectFile: (filePath: string) => void;
-}) {
-  const [expanded, setExpanded] = useState(false);
-
-  if (node.type === 'directory') {
-    return (
-      <div>
-        <div className="folder-header" onClick={() => setExpanded((prev) => !prev)}>
-          <span className="arrow" style={{ marginRight: 8 }}>
-            {expanded ? '▼' : '►'}
-          </span>
-          {node.name}
-        </div>
-        {expanded && node.children && (
-          <div style={{ marginLeft: '1rem' }}>
-            {node.children.map((child) => (
-              <FolderTree key={child.path} node={child} onSelectFile={onSelectFile} />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="file-item" onClick={() => onSelectFile(node.path)}>
-      {node.name}
-    </div>
-  );
-}
-
-export default function TopicSelector({
-  language,
-  onSelect,
-}: {
+interface TopicSelectorProps {
   language: string;
   onSelect: (filePath: string) => void;
-}) {
+}
+
+export default function TopicSelector({ language, onSelect }: TopicSelectorProps) {
   const [topics, setTopics] = useState<TopicNode[]>([]);
 
   useEffect(() => {

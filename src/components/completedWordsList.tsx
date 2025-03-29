@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CompletedWord } from '../types';
+import { CompletedWord } from '@/src/types';
 
 interface CompletedWordsListProps {
   words: CompletedWord[];
